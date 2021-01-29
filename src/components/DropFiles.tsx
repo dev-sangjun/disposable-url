@@ -45,10 +45,12 @@ const DropFiles: React.FC<DropFilesProps> = ({ className }) => {
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [enablePreviewMode, setEnablePreviewMode] = useState(true);
+  const [complete, setComplete] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const url = "https://disposable-url.herokuapp.com/upload/";
   // const devUrl = "http://localhost:5000/upload/";
   const onDrop = (acceptedFiles: File[]) => {
+    setComplete(false);
     setFiles(acceptedFiles);
   };
   const onClick = () => {
@@ -59,6 +61,7 @@ const DropFiles: React.FC<DropFilesProps> = ({ className }) => {
         const { uuid } = res.data;
         setKey(uuid);
         setLoading(false);
+        setComplete(true);
         setFiles([]);
       });
     }
@@ -119,6 +122,8 @@ const DropFiles: React.FC<DropFilesProps> = ({ className }) => {
                 width={32}
                 style={{ position: "relative", top: "3px" }}
               />
+            ) : complete ? (
+              "Complete"
             ) : (
               "Generate URL"
             )}
