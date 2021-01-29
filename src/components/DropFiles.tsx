@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import Dropzone from "react-dropzone";
 import colors from "../styles/colors";
+import { uploadFiles } from "../api/upload";
 
 type DropFilesProps = {
   className?: string;
@@ -19,15 +20,15 @@ const Button = styled.button`
   &:hover {
     cursor: pointer;
   }
-  &:focus {
-    outline: none;
-  }
 `;
 
 const DropFiles: React.FC<DropFilesProps> = ({ className }) => {
   const [files, setFiles] = useState<File[]>();
   const onDrop = (acceptedFiles: File[]) => {
     setFiles(files);
+  };
+  const onClick = () => {
+    if (files) uploadFiles(files).then(res => console.log(res));
   };
   return (
     <Dropzone onDrop={onDrop}>
@@ -37,7 +38,7 @@ const DropFiles: React.FC<DropFilesProps> = ({ className }) => {
             <input {...getInputProps()} />
             <p className="drop-message">Drop your files here.</p>
           </div>
-          <Button>Generate URL</Button>
+          <Button onClick={onClick}>Generate URL</Button>
         </section>
       )}
     </Dropzone>
@@ -57,5 +58,8 @@ export default styled(DropFiles)`
   .drop-message {
     font-size: 1.5em;
     color: ${colors.gray};
+  }
+  &:hover {
+    cursor: pointer;
   }
 `;
