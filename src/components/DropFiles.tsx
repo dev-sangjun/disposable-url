@@ -24,11 +24,17 @@ const Button = styled.button`
 
 const DropFiles: React.FC<DropFilesProps> = ({ className }) => {
   const [files, setFiles] = useState<File[]>();
+  const [key, setKey] = useState<string | null>("");
+  const url = "https://disposable-url.herokuapp.com/";
   const onDrop = (acceptedFiles: File[]) => {
-    setFiles(files);
+    setFiles(acceptedFiles);
   };
   const onClick = () => {
-    if (files) uploadFiles(files).then(res => console.log(res));
+    if (files)
+      uploadFiles(files).then(res => {
+        const { uuid } = res.data;
+        setKey(uuid);
+      });
   };
   return (
     <Dropzone onDrop={onDrop}>
@@ -39,6 +45,7 @@ const DropFiles: React.FC<DropFilesProps> = ({ className }) => {
             <p className="drop-message">Drop your files here.</p>
           </div>
           <Button onClick={onClick}>Generate URL</Button>
+          {key && <span className="url">{url + key}</span>}
         </section>
       )}
     </Dropzone>
