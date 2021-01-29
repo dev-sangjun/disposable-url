@@ -9,6 +9,7 @@ nav,
 section {
   width: 100%;
   max-width: 1024px;
+  padding: 2rem;
 }
 
 .App {

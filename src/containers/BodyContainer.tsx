@@ -36,7 +36,6 @@ export default styled(BodyContainer)`
     margin-bottom: 4rem;
   }
   .drop-container {
-    width: 70%;
     margin: auto;
     display: flex;
     flex-direction: column;

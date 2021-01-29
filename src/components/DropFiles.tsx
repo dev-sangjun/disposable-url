@@ -57,7 +57,7 @@ const DropFiles: React.FC<DropFilesProps> = ({ className }) => {
     if (files) {
       setLoading(true);
       setCopied(false);
-      uploadFiles(enablePreviewMode ? 1 : 0, files).then(res => {
+      uploadFiles(enablePreviewMode ? 2 : 0, files).then(res => {
         const { uuid } = res.data;
         setKey(uuid);
         setLoading(false);
@@ -79,7 +79,7 @@ const DropFiles: React.FC<DropFilesProps> = ({ className }) => {
     return (
       files && (
         <div className="dropzone-file-container">
-          <h3>Added Files ({files.length} files):</h3>
+          <h3>Added Files ({files.length})):</h3>
           <ul className="filename-list">
             {files.map((file, index) => (
               <li className="filename-item" key={index}>
@@ -235,6 +235,7 @@ export default styled(DropFiles)`
       padding-right: 1rem;
       border: none;
       font-size: 1em;
+      overflow: hidden;
     }
   }
 `;
