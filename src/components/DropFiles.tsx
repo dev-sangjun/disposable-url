@@ -44,16 +44,18 @@ const DropFiles: React.FC<DropFilesProps> = ({ className }) => {
   const [key, setKey] = useState("");
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [enablePreviewMode, setEnablePreviewMode] = useState(true);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const url = "https://disposable-url.herokuapp.com/upload/";
+  // const devUrl = "http://localhost:5000/upload/";
   const onDrop = (acceptedFiles: File[]) => {
     setFiles(acceptedFiles);
-    console.log(acceptedFiles);
   };
   const onClick = () => {
     if (files) {
       setLoading(true);
-      uploadFiles(files).then(res => {
+      setCopied(false);
+      uploadFiles(enablePreviewMode ? 1 : 0, files).then(res => {
         const { uuid } = res.data;
         setKey(uuid);
         setLoading(false);
@@ -89,6 +91,10 @@ const DropFiles: React.FC<DropFilesProps> = ({ className }) => {
       )
     );
   };
+  const onCheck = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { checked } = e.target;
+    setEnablePreviewMode(checked);
+  };
   return (
     <Dropzone onDrop={onDrop}>
       {({ getRootProps, getInputProps }) => (
@@ -117,6 +123,15 @@ const DropFiles: React.FC<DropFilesProps> = ({ className }) => {
               "Generate URL"
             )}
           </GenerateURLButton>
+          <div className="checkbox-container">
+            <label className="checkbox-label">Enable Preview Mode:</label>
+            <input
+              id="checkbox"
+              type="checkbox"
+              onChange={onCheck}
+              checked={enablePreviewMode}
+            />
+          </div>
           <div className="url-container">
             <label className="url-label" htmlFor="url">
               URL:
@@ -181,6 +196,16 @@ export default styled(DropFiles)`
     }
     &:hover {
       cursor: pointer;
+    }
+  }
+  .checkbox-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 1rem;
+    color: white;
+    label {
+      margin-right: 1rem;
     }
   }
   .url-container {
