@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import Dropzone from "react-dropzone";
+import Loader from "react-loader-spinner";
 import colors from "../styles/colors";
 import { uploadFiles } from "../api/upload";
 
@@ -25,16 +26,20 @@ const Button = styled.button`
 const DropFiles: React.FC<DropFilesProps> = ({ className }) => {
   const [files, setFiles] = useState<File[]>();
   const [key, setKey] = useState<string | null>("");
+  const [loading, setLoading] = useState(false);
   const url = "https://disposable-url.herokuapp.com/";
   const onDrop = (acceptedFiles: File[]) => {
     setFiles(acceptedFiles);
   };
   const onClick = () => {
-    if (files)
+    if (files) {
+      setLoading(true);
       uploadFiles(files).then(res => {
         const { uuid } = res.data;
         setKey(uuid);
+        setLoading(false);
       });
+    }
   };
   return (
     <Dropzone onDrop={onDrop}>
@@ -44,7 +49,19 @@ const DropFiles: React.FC<DropFilesProps> = ({ className }) => {
             <input {...getInputProps()} />
             <p className="drop-message">Drop your files here.</p>
           </div>
-          <Button onClick={onClick}>Generate URL</Button>
+          <Button onClick={onClick}>
+            {loading ? (
+              <Loader
+                type="Circles"
+                color="#FFFFFF"
+                height={32}
+                width={32}
+                style={{ position: "relative", top: "3px" }}
+              />
+            ) : (
+              "Generate URL"
+            )}
+          </Button>
           {key && <span className="url">{url + key}</span>}
         </section>
       )}

@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const URL = "https://disposable-url.herokuapp.com/upload";
+const URL = "https://disposable-url.herokuapp.com/";
 
 export const uploadFiles = (files: File[]) => {
   const formData = new FormData();
