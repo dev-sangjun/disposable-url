@@ -1,2 +1,3 @@
 import Navbar from "./Navbar";
-export { Navbar };
+import DropFiles from "./DropFiles";
+export { Navbar, DropFiles };
