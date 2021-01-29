@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import styled from "styled-components";
 import Dropzone from "react-dropzone";
 import Loader from "react-loader-spinner";
@@ -9,7 +9,7 @@ type DropFilesProps = {
   className?: string;
 };
 
-const Button = styled.button`
+const GenerateURLButton = styled.button`
   width: 100%;
   height: 3rem;
   border: none;
@@ -19,17 +19,36 @@ const Button = styled.button`
   font-size: 1.2em;
   font-weight: bold;
   &:hover {
-    cursor: pointer;
+    background-color: ${colors.primaryBright};
+    cursor: ${(props: React.ButtonHTMLAttributes<HTMLButtonElement>) =>
+      props.disabled ? "not-allowed" : "pointer"};
+  }
+`;
+
+const CopyButton = styled.button`
+  height: 100%;
+  padding: 1rem;
+  background-color: ${colors.gray};
+  color: white;
+  border: none;
+  font-weight: bold;
+  &:hover {
+    background-color: ${colors.grayBright};
+    cursor: ${(props: React.ButtonHTMLAttributes<HTMLButtonElement>) =>
+      props.disabled ? "not-allowed" : "pointer"};
   }
 `;
 
 const DropFiles: React.FC<DropFilesProps> = ({ className }) => {
   const [files, setFiles] = useState<File[]>();
-  const [key, setKey] = useState<string | null>("");
+  const [key, setKey] = useState("");
   const [loading, setLoading] = useState(false);
-  const url = "https://disposable-url.herokuapp.com/";
+  const [copied, setCopied] = useState(false);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const url = "https://disposable-url.herokuapp.com/upload/";
   const onDrop = (acceptedFiles: File[]) => {
     setFiles(acceptedFiles);
+    console.log(acceptedFiles);
   };
   const onClick = () => {
     if (files) {
@@ -38,18 +57,54 @@ const DropFiles: React.FC<DropFilesProps> = ({ className }) => {
         const { uuid } = res.data;
         setKey(uuid);
         setLoading(false);
+        setFiles([]);
       });
     }
+  };
+  const onCopy = () => {
+    const input = inputRef.current;
+    if (input) {
+      input.select();
+      input.setSelectionRange(0, 99999);
+      document.execCommand("copy");
+      setCopied(true);
+    }
+  };
+  const getFilenames = () => {
+    return (
+      files && (
+        <div className="dropzone-file-container">
+          <h3>Added Files ({files.length} files):</h3>
+          <ul className="filename-list">
+            {files.map((file, index) => (
+              <li className="filename-item" key={index}>
+                <span className="filename">{file.name}</span>
+                <span className="file-size">
+                  {Number(file.size / 1000000).toFixed(1)}MB
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )
+    );
   };
   return (
     <Dropzone onDrop={onDrop}>
       {({ getRootProps, getInputProps }) => (
-        <section>
-          <div className={className} {...getRootProps()}>
+        <section className={className}>
+          <div className="dropzone" {...getRootProps()}>
             <input {...getInputProps()} />
-            <p className="drop-message">Drop your files here.</p>
+            {files && files.length > 0 ? (
+              getFilenames()
+            ) : (
+              <p className="drop-message">Drop your files here.</p>
+            )}
           </div>
-          <Button onClick={onClick}>
+          <GenerateURLButton
+            onClick={onClick}
+            disabled={!files || files.length <= 0}
+          >
             {loading ? (
               <Loader
                 type="Circles"
@@ -61,8 +116,22 @@ const DropFiles: React.FC<DropFilesProps> = ({ className }) => {
             ) : (
               "Generate URL"
             )}
-          </Button>
-          {key && <span className="url">{url + key}</span>}
+          </GenerateURLButton>
+          <div className="url-container">
+            <label className="url-label" htmlFor="url">
+              URL:
+            </label>
+            <input
+              id="url"
+              type="text"
+              value={key === "" ? "" : url + key}
+              readOnly
+              ref={inputRef}
+            />
+            <CopyButton disabled={key === ""} onClick={onCopy}>
+              {copied ? "Copied!" : "Copy"}
+            </CopyButton>
+          </div>
         </section>
       )}
     </Dropzone>
@@ -70,20 +139,72 @@ const DropFiles: React.FC<DropFilesProps> = ({ className }) => {
 };
 
 export default styled(DropFiles)`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 15rem;
-  margin: auto;
-  margin-bottom: 1rem;
-  border: 1px solid ${colors.primary};
-  border-radius: 0.25rem;
-  .drop-message {
-    font-size: 1.5em;
-    color: ${colors.gray};
+  .dropzone {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 15rem;
+    margin: auto;
+    margin-bottom: 1rem;
+    border: 1px solid ${colors.primary};
+    border-radius: 0.25rem;
+    outline: none;
+    .dropzone-file-container {
+      width: 100%;
+      height: 100%;
+      padding: 1rem;
+      color: white;
+      overflow-y: scroll;
+      .filename-list {
+        width: 100%;
+        padding: 1rem;
+        .filename-item {
+          display: flex;
+          justify-content: space-between;
+          width: 100%;
+          margin-bottom: 0.5rem;
+          .filename {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+          .file-size {
+            margin-left: 1rem;
+          }
+        }
+      }
+    }
+    .drop-message {
+      font-size: 1.5em;
+      color: ${colors.gray};
+    }
+    &:hover {
+      cursor: pointer;
+    }
   }
-  &:hover {
-    cursor: pointer;
+  .url-container {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 3rem;
+    margin-top: 1rem;
+    border-radius: 0.25rem;
+    background-color: white;
+    overflow: hidden;
+    .url-label {
+      position: absolute;
+      left: 1rem;
+      font-weight: bold;
+    }
+    input {
+      width: 100%;
+      height: 100%;
+      padding-left: 4rem;
+      padding-right: 1rem;
+      border: none;
+      font-size: 1em;
+    }
   }
 `;

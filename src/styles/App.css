@@ -15,3 +15,10 @@ section {
   background-color: #101820;
   min-height: 100vh;
 }
+
+::-webkit-scrollbar {
+  width: 3px;
+}
+::-webkit-scrollbar-thumb {
+  background: #f2aa4c;
+}
