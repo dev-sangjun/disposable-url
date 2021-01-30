@@ -69,9 +69,7 @@ const DropFiles: React.FC<DropFilesProps> = ({ className }) => {
   const onCopy = () => {
     const input = inputRef.current;
     if (input) {
-      input.select();
-      input.setSelectionRange(0, 99999);
-      document.execCommand("copy");
+      navigator.clipboard.writeText(url + key);
       setCopied(true);
     }
   };

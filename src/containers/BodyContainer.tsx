@@ -33,7 +33,7 @@ export default styled(BodyContainer)`
   margin: auto;
   margin-top: 6rem;
   ${Message} {
-    margin-bottom: 4rem;
+    margin-bottom: 2rem;
   }
   .drop-container {
     margin: auto;
