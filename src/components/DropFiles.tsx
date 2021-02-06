@@ -12,6 +12,7 @@ type DropFilesProps = {
 const GenerateURLButton = styled.button`
   width: 100%;
   height: 3rem;
+  margin-top: 1rem;
   border: none;
   border-radius: 0.25rem;
   background-color: ${colors.primary};
@@ -44,20 +45,33 @@ const DropFiles: React.FC<DropFilesProps> = ({ className }) => {
   const [key, setKey] = useState("");
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [enablePreviewMode, setEnablePreviewMode] = useState(true);
+  const [params, setParams] = useState({
+    numLimit: "1",
+    expiresIn: "15",
+  });
+  const { numLimit, expiresIn } = params;
   const [complete, setComplete] = useState(false);
+  const [error, setError] = useState({
+    numError: "",
+    expireError: "",
+    emptyError: "",
+  });
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const url = "https://disposable-url.herokuapp.com/upload/";
+  const url = "https://disposable-url.herokuapp.com/download/";
   // const devUrl = "http://localhost:5000/upload/";
   const onDrop = (acceptedFiles: File[]) => {
     setComplete(false);
     setFiles(acceptedFiles);
   };
   const onClick = () => {
-    if (files) {
+    if (files && !disabled()) {
       setLoading(true);
       setCopied(false);
-      uploadFiles(enablePreviewMode ? 2 : 0, files).then(res => {
+      uploadFiles(
+        parseInt(params.numLimit),
+        parseInt(params.expiresIn),
+        files
+      ).then(res => {
         const { uuid } = res.data;
         setKey(uuid);
         setLoading(false);
@@ -73,6 +87,42 @@ const DropFiles: React.FC<DropFilesProps> = ({ className }) => {
       setCopied(true);
     }
   };
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    const num = parseInt(value);
+    switch (name) {
+      case "num-limit":
+        setParams({
+          ...params,
+          numLimit: isNaN(num) ? "" : String(num),
+        });
+        setError({
+          ...error,
+          numError:
+            num < 0 || num > 5
+              ? '"Number of access" must be between 1 and 5.'
+              : "",
+          emptyError: isNaN(num) ? "All fields must not be empty." : "",
+        });
+
+        break;
+      case "expire":
+        setParams({
+          ...params,
+          expiresIn: isNaN(num) ? "" : String(num),
+        });
+        setError({
+          ...error,
+          expireError:
+            num < 0 || num > 15 ? '"Expires in" must be between 1 and 15.' : "",
+          emptyError: isNaN(num) ? "All fields must not be empty." : "",
+        });
+
+        break;
+      default:
+        break;
+    }
+  };
   const getFilenames = () => {
     return (
       files && (
@@ -83,7 +133,7 @@ const DropFiles: React.FC<DropFilesProps> = ({ className }) => {
               <li className="filename-item" key={index}>
                 <span className="filename">{file.name}</span>
                 <span className="file-size">
-                  {Number(file.size / 1000000).toFixed(1)}MB
+                  {Number(file.size / 1048576).toFixed(1)}MB
                 </span>
               </li>
             ))}
@@ -92,12 +142,26 @@ const DropFiles: React.FC<DropFilesProps> = ({ className }) => {
       )
     );
   };
-  const onCheck = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { checked } = e.target;
-    setEnablePreviewMode(checked);
+  const disabled = () => {
+    const { numError, expireError, emptyError } = error;
+    return (
+      !files ||
+      files.length <= 0 ||
+      numError !== "" ||
+      expireError !== "" ||
+      emptyError !== ""
+    );
+  };
+  const maxSize = 8;
+  const onDropRejected = () => {
+    alert(`Total file size must not exceed ${maxSize}MB`);
   };
   return (
-    <Dropzone onDrop={onDrop}>
+    <Dropzone
+      onDrop={onDrop}
+      maxSize={maxSize * 1048576}
+      onDropRejected={onDropRejected}
+    >
       {({ getRootProps, getInputProps }) => (
         <section className={className}>
           <div className="dropzone" {...getRootProps()}>
@@ -108,13 +172,43 @@ const DropFiles: React.FC<DropFilesProps> = ({ className }) => {
               <p className="drop-message">Drop your files here.</p>
             )}
           </div>
-          <GenerateURLButton
-            onClick={onClick}
-            disabled={!files || files.length <= 0}
-          >
+          <div className="limit-container">
+            <div className="top-container">
+              <div className="limit-item">
+                <label htmlFor="expire">Number of access:</label>
+                <input
+                  id="num-limit"
+                  name="num-limit"
+                  type="number"
+                  value={numLimit}
+                  onChange={onChange}
+                />
+              </div>
+              <div className="limit-item">
+                <label htmlFor="expire">Expires in (Minutes):</label>
+                <input
+                  id="expire"
+                  name="expire"
+                  type="number"
+                  value={expiresIn}
+                  onChange={onChange}
+                />
+              </div>
+            </div>
+            {error.numError !== "" && (
+              <span className="error">{error.numError}</span>
+            )}
+            {error.expireError !== "" && (
+              <span className="error">{error.expireError}</span>
+            )}
+            {error.emptyError !== "" && (
+              <span className="error">{error.emptyError}</span>
+            )}
+          </div>
+          <GenerateURLButton onClick={onClick} disabled={disabled()}>
             {loading ? (
               <Loader
-                type="Circles"
+                type="TailSpin"
                 color="#FFFFFF"
                 height={32}
                 width={32}
@@ -126,15 +220,6 @@ const DropFiles: React.FC<DropFilesProps> = ({ className }) => {
               "Generate URL"
             )}
           </GenerateURLButton>
-          <div className="checkbox-container">
-            <label className="checkbox-label">Enable Preview Mode:</label>
-            <input
-              id="checkbox"
-              type="checkbox"
-              onChange={onCheck}
-              checked={enablePreviewMode}
-            />
-          </div>
           <div className="url-container">
             <label className="url-label" htmlFor="url">
               URL:
@@ -201,14 +286,45 @@ export default styled(DropFiles)`
       cursor: pointer;
     }
   }
-  .checkbox-container {
+  .limit-container {
     display: flex;
+    flex-direction: column;
     justify-content: center;
-    align-items: center;
-    margin-top: 1rem;
-    color: white;
+    align-content: center;
+    text-align: center;
+    .top-container {
+      display: flex;
+      justify-content: center;
+      align-content: center;
+      margin-bottom: 0.5rem;
+      .limit-item {
+        display: flex;
+        justify-content: center;
+        align-content: center;
+        margin-right: 1rem;
+        &:last-child {
+          margin-right: 0;
+        }
+      }
+    }
+    .error {
+      color: red;
+      margin-bottom: 0.5rem;
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
     label {
-      margin-right: 1rem;
+      position: relative;
+      top: 4px;
+      color: white;
+      text-align: right;
+      margin-right: 0.5rem;
+    }
+    input {
+      width: 4rem;
+      height: 2rem;
+      padding: 0.5rem;
     }
   }
   .url-container {
@@ -234,6 +350,50 @@ export default styled(DropFiles)`
       border: none;
       font-size: 1em;
       overflow: hidden;
+    }
+  }
+  .share-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin-top: 1rem;
+    text-align: center;
+    .share-label {
+      color: white;
+      margin-right: 1rem;
+      font-weight: bold;
+    }
+    .share-buttons {
+      display: flex;
+      justify-content: center;
+      margin-top: 0.5rem;
+    }
+  }
+  @media (max-width: 640px) {
+    .limit-container {
+      .top-container {
+        flex-direction: column;
+        .limit-item {
+          flex-direction: column;
+          align-items: center;
+          margin-bottom: 0.5rem;
+          margin-right: 0;
+          &:last-child {
+            margin-right: 0;
+          }
+        }
+        label {
+          position: inherit;
+          color: white;
+          text-align: center;
+          margin-bottom: 0.5rem;
+          margin-right: 0;
+        }
+        input {
+          margin-right: 0;
+        }
+      }
     }
   }
 `;

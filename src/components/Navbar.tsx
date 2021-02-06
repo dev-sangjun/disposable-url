@@ -14,10 +14,10 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
     <div className={className}>
       <nav>
         <Logo>DISP.URL</Logo>
-        <ul className="nav-items">
+        {/* <ul className="nav-items">
           <li className="nav-item">Pricing</li>
           <li className="nav-item">About</li>
-        </ul>
+        </ul> */}
       </nav>
     </div>
   );

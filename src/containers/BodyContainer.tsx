@@ -25,13 +25,27 @@ const BodyContainer: React.FC<BodyContainerProps> = ({ className }) => {
       <div className="drop-container">
         <DropFiles />
       </div>
+      <a
+        className="product-hunt"
+        href="https://www.producthunt.com/posts/disposable-url-dispurl?utm_source=badge-review&utm_medium=badge&utm_souce=badge-disposable-url-dispurl#discussion-body"
+        target="_blank"
+      >
+        <img
+          src="https://api.producthunt.com/widgets/embed-image/v1/review.svg?post_id=282919&theme=light"
+          alt="Disposable URL (DISPURL) - One Time URL for File Transfer | Product Hunt"
+          style={{ width: "250px", height: "54px" }}
+          width="250"
+          height="54"
+        />
+      </a>
     </section>
   );
 };
 
 export default styled(BodyContainer)`
   margin: auto;
-  margin-top: 6rem;
+  margin-top: 2rem;
+  text-align: center;
   ${Message} {
     margin-bottom: 2rem;
   }
@@ -40,5 +54,7 @@ export default styled(BodyContainer)`
     display: flex;
     flex-direction: column;
     align-items: center;
+  }
+  .product-hunt {
   }
 `;
